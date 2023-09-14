@@ -9,10 +9,10 @@
 #CMD ["/app"]
 
 
-FROM golang
+FROM golang:1.16
 
-# RUN go get -u github.com/tgulacsi/fronius
-RUN go install github.com/tgulacsi/fronius@latest
+RUN go get -u github.com/tgulacsi/fronius
+# RUN go install github.com/tgulacsi/fronius@latest
 
 ENV INFLUX_USER=influxusername
 ENV INFLUX_PASSW=influxuserpassword 
