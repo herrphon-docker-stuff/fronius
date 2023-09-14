@@ -13,7 +13,7 @@ FROM golang
 
 RUN go get -u github.com/tgulacsi/fronius
 ENV INFLUX_USER=influxusername
-END INFLUX_PASSW=influxuserpassword 
+ENV INFLUX_PASSW=influxuserpassword 
 
 CMD ["fronius", "serve"]
 
