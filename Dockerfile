@@ -1,18 +1,20 @@
-FROM golang as builder
+// TODO: move to minimal container l8r... and fixme... this is just typed from my head
 
-ADD . .
-RUN go build
+#FROM golang as builder
+#ADD . .
+#RUN go build
 
-FROM scratch
+#FROM scratch
+#COPY --from=builder /app/app /app
+#CMD ["/app"]
 
-COPY --from=builder /app/app /app
-
-CMD ["/app"]
-
-// TODO: fixme... this is just typed from my head
 
 FROM golang
 
 RUN go get -u github.com/tgulacsi/fronius
+ENV INFLUX_USER=influxusername
+END INFLUX_PASSW=influxuserpassword 
+
+CMD ["fronius", "serve"]
 
 
