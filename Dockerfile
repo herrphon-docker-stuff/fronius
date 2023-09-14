@@ -11,7 +11,9 @@
 
 FROM golang
 
-RUN go get -u github.com/tgulacsi/fronius
+# RUN go get -u github.com/tgulacsi/fronius
+RUN go install github.com/tgulacsi/fronius@latest
+
 ENV INFLUX_USER=influxusername
 ENV INFLUX_PASSW=influxuserpassword 
 
