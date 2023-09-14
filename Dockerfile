@@ -1,4 +1,4 @@
-// TODO: move to minimal container l8r... and fixme... this is just typed from my head
+# TODO: move to minimal container l8r... and fixme... this is just typed from my head
 
 #FROM golang as builder
 #ADD . .
