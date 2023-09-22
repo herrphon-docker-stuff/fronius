@@ -9,7 +9,7 @@
 #CMD ["/app"]
 
 
-FROM golang:1.16
+FROM golang:1.20
 
 RUN go get -u github.com/tgulacsi/fronius
 # RUN go install github.com/tgulacsi/fronius@latest
