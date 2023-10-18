@@ -25,7 +25,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	influx "github.com/influxdb/influxdb/client"
+	influx "github.com/influxdata/influxdb/client"
 )
 
 type influxClient struct {
