@@ -17,44 +17,31 @@
 package main
 
 import (
-	"net/url"
+	"context"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
-	influx "github.com/influxdata/influxdb/client"
+	"github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api"
 )
 
 type influxClient struct {
-	*influx.Client
-	Database, RetentionPolicy string
+	influxApi       *api.WriteAPIBlocking
+	RetentionPolicy string
 
 	Logger log.Logger
 }
 
-func newInfluxClient(influxDB, database, retentionPolicy string, logger log.Logger) (influxClient, error) {
-	var ic influxClient
-	u, err := url.Parse(influxDB)
-	if err != nil {
-		return ic, errors.Wrapf(err, "parse %q", influxDB)
-	}
-	influxConf := influx.Config{
-		URL:      *u,
-		Username: os.Getenv("INFLUX_USER"),
-		Password: os.Getenv("INFLUX_PASSW"),
-	}
-	con, err := influx.NewClient(influxConf)
-	if err != nil {
-		return ic, errors.Wrapf(err, "%#v", influxConf)
-	}
-	level.Debug(logger).Log("connected", "server", con)
-	if _, _, err = con.Ping(); err != nil {
-		return ic, errors.Wrapf(err, "ping")
-	}
-	return influxClient{Client: con, Database: database, RetentionPolicy: retentionPolicy, Logger: logger}, nil
+func newInfluxClient(influxUrl, influxOrg, influxBucket, retentionPolicy string, logger log.Logger) (influxClient, error) {
+	authToken := os.Getenv("INFLUX_AUTH_TOKEN")
+	// Create a new client using an InfluxDB server base URL and an authentication token
+	client := influxdb2.NewClient(influxUrl, authToken)
+	// Use blocking write client for writes to desired bucket
+	writeAPI := client.WriteAPIBlocking(influxOrg, influxBucket)
+
+	return influxClient{influxApi: &writeAPI, RetentionPolicy: retentionPolicy, Logger: logger}, nil
 }
 
 type dataPoint struct {
@@ -65,21 +52,18 @@ type dataPoint struct {
 }
 
 func (c influxClient) Put(measurement string, points ...dataPoint) error {
-	ip := make([]influx.Point, len(points))
+	ip := make([]*write.Point, len(points))
+
 	for i, p := range points {
-		ip[i] = influx.Point{
-			Measurement: measurement,
-			Tags:        map[string]string{"name": p.Name},
-			Fields:      map[string]interface{}{"energy": p.Value, "unit": p.Unit},
-			Time:        p.Time,
-		}
+		ip[i] = influxdb2.NewPoint(
+			measurement,
+			map[string]string{"name": p.Name},
+			map[string]interface{}{"energy": p.Value, "unit": p.Unit},
+			p.Time)
 	}
 
-	bps := influx.BatchPoints{
-		Points:          ip,
-		Database:        c.Database,
-		RetentionPolicy: c.RetentionPolicy,
-	}
-	_, err := c.Client.Write(bps)
+	influxApi := *c.influxApi
+	err := influxApi.WritePoint(context.Background(), ip...)
+
 	return err
 }

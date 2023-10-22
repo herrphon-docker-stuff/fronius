@@ -74,8 +74,9 @@ func main() {
 	}
 
 	var (
-		influxDB        = "http://localhost:8086"
-		database        = "fronius"
+		influxURL       = "http://localhost:8086"
+		influxOrg       = "default"
+		influxBucket    = "fronius"
 		retentionPolicy = "default"
 		servePath       = "/solarapi/v1/current/"
 	)
@@ -84,13 +85,13 @@ func main() {
 		Use:   "serve",
 		Short: "accept push from the fronius datalogger",
 		Run: func(_ *cobra.Command, args []string) {
-			con, err := newInfluxClient(influxDB, database, retentionPolicy, logger)
+			influxClient, err := newInfluxClient(influxURL, influxOrg, influxBucket, retentionPolicy, logger)
 			if err != nil {
 				level.Error(logger).Log("msg", "influx connection", "error", err)
 				os.Exit(1)
 			}
 
-			http.Handle(servePath, solarAPIAccept{con})
+			http.Handle(servePath, solarAPIAccept{influxClient})
 			addr := ":15015"
 			if len(args) > 0 {
 				addr = args[0]
@@ -101,8 +102,9 @@ func main() {
 	}
 	f := serveCmd.Flags()
 	f.StringVar(&servePath, "serve.path", servePath, "HTTP endpoint to publish")
-	f.StringVar(&influxDB, "server", influxDB, "influx server to connect to")
-	f.StringVar(&database, "database", database, "influx database to insert data into")
+	f.StringVar(&influxURL, "server", influxURL, "influx server to connect to")
+	f.StringVar(&influxOrg, "org", influxOrg, "influx org to use")
+	f.StringVar(&influxBucket, "database", influxBucket, "influx bucket to insert data into")
 	f.StringVar(&retentionPolicy, "retention", retentionPolicy, "retention policy to use")
 
 	mainCmd := &cobra.Command{
@@ -123,7 +125,7 @@ func main() {
 		Use:   "influx",
 		Short: "insert data into the InfluxDB specified with the --server flag",
 		Run: func(_ *cobra.Command, args []string) {
-			ic, err := newInfluxClient(influxDB, database, retentionPolicy, logger)
+			influxClient, err := newInfluxClient(influxURL, influxOrg, influxBucket, retentionPolicy, logger)
 			if err != nil {
 				level.Error(logger).Log("msg", "influx connection", "error", err)
 				os.Exit(1)
@@ -138,15 +140,16 @@ func main() {
 					}
 				}
 			}
-			if err := ic.Put("fronius energy", points...); err != nil {
+			if err := influxClient.Put("fronius energy", points...); err != nil {
 				level.Error(logger).Log("msg", "write batch to db", "error", err)
 				os.Exit(2)
 			}
 		},
 	}
 	f = influxCmd.Flags()
-	f.StringVar(&influxDB, "server", influxDB, "influx server to connect to")
-	f.StringVar(&database, "database", database, "influx database to insert data into")
+	f.StringVar(&influxURL, "server", influxURL, "influx server to connect to")
+	f.StringVar(&influxOrg, "org", influxOrg, "influx database to insert data into")
+	f.StringVar(&influxBucket, "database", influxBucket, "influx database to insert data into")
 	f.StringVar(&retentionPolicy, "retention", retentionPolicy, "retention policy to use")
 	mainCmd.AddCommand(influxCmd)
 
