@@ -74,8 +74,8 @@ func main() {
 	}
 
 	var (
-		influxURL       = "http://localhost:8086"
-		influxOrg       = "default"
+		influxURL       = "http://192.168.178.50:8086"
+		influxOrg       = "foobar"
 		influxBucket    = "fronius"
 		retentionPolicy = "default"
 		servePath       = "/solarapi/v1/current/"
