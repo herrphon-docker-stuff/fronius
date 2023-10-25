@@ -6,6 +6,10 @@ ADD . .
 RUN go build
 RUN ls -la
 
+# Static build required so that we can safely copy the binary over.
+# `-tags timetzdata` embeds zone info from the "time/tzdata" package.
+#RUN CGO_ENABLED=0 go install -ldflags '-extldflags "-static"' -tags timetzdata
+
 FROM ubuntu
 # FROM scratch
 # FROM alpine
