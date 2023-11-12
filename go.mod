@@ -7,6 +7,7 @@ toolchain go1.21.3
 require (
 	github.com/go-kit/kit v0.13.0
 	github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040
+	github.com/lib/pq v1.10.9
 	github.com/spf13/cobra v1.7.0
 	github.com/tgulacsi/go v0.27.1
 )

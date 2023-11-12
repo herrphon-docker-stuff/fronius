@@ -28,7 +28,7 @@ import (
 )
 
 type solarAPIAccept struct {
-	influxClient
+	postgresClient
 }
 
 func (sa solarAPIAccept) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -49,23 +49,17 @@ func (sa solarAPIAccept) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	level.Debug(sa.Logger).Log("msg", "decoded", "data", fmt.Sprintf("%#v", data))
 	w.WriteHeader(200)
 
-	if err := sa.influxClient.Put("fronius energy",
-		[]dataPoint{
-			{Name: "pac", Time: data.Head.Timestamp,
-				Unit:  data.Body.Pac.Unit,
-				Value: data.Body.Pac.Values["1"]},
-			{Name: "day", Time: data.Head.Timestamp,
-				Unit:  data.Body.Day.Unit,
-				Value: data.Body.Day.Values["1"]},
-			{Name: "year", Time: data.Head.Timestamp,
-				Unit:  data.Body.Year.Unit,
-				Value: data.Body.Year.Values["1"]},
-			{Name: "total", Time: data.Head.Timestamp,
-				Unit:  data.Body.Total.Unit,
-				Value: data.Body.Total.Values["1"]},
-		}...); err != nil {
-		level.Error(sa.Logger).Log("msg", "write batch to db", "error", err)
-	}
+	sa.postgresClient.Put(
+		data.Body.Pac.Values["1"],
+		data.Body.Pac.Unit,
+		data.Body.Day.Values["1"],
+		data.Body.Day.Unit,
+		data.Body.Year.Values["1"],
+		data.Body.Year.Unit,
+		data.Body.Total.Values["1"],
+		data.Body.Total.Unit,
+	)
+
 }
 
 type solarV1CurrentInverter struct {
