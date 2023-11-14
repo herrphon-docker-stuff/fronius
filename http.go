@@ -50,14 +50,10 @@ func (sa solarAPIAccept) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 
 	sa.postgresClient.Put(
-		data.Body.Pac.Values["1"],
-		data.Body.Pac.Unit,
-		data.Body.Day.Values["1"],
-		data.Body.Day.Unit,
-		data.Body.Year.Values["1"],
-		data.Body.Year.Unit,
-		data.Body.Total.Values["1"],
-		data.Body.Total.Unit,
+		data.Body.Pac.Values["1"], data.Body.Pac.Unit,
+		data.Body.Day.Values["1"], data.Body.Day.Unit,
+		data.Body.Year.Values["1"], data.Body.Year.Unit,
+		data.Body.Total.Values["1"], data.Body.Total.Unit,
 	)
 
 }
